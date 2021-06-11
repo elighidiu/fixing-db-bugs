@@ -38,6 +38,7 @@ if(!empty($_POST['firstname']) && !empty($_POST['lastname'])) {
     $handle->bindValue(':lastname', $_POST['lastname']);
     $handle->bindValue(':year', date('Y'));
     $handle->execute();
+    var_dump($handle->execute());
 
     if(!empty($_POST['id'])) {
         $handle = $pdo->prepare('DELETE FROM sport WHERE user_id = :id');
@@ -68,10 +69,11 @@ elseif(isset($_POST['delete'])) {
     $message = 'Your record has been deleted';
 }
 
-//@todo Invalid query?
-$handle = $pdo->prepare('SELECT id, concat_ws(firstname, lastname, " ") AS name, sport FROM user LEFT JOIN sport ON id = sport.user_id where year = :year order by sport');
+//@todo Invalid query?  - added DB name and changed the position of the separator in concat_ws, specified which id from which table to get
+$handle = $pdo->prepare('SELECT user.id, concat_ws(" ", firstname, lastname) AS name, sport FROM sportusers.user LEFT JOIN sport ON user.id = sport.user_id where year = :year order by sport');
 $handle->bindValue(':year', date('Y'));
 $handle->execute();
+
 $users = $handle->fetchAll();
 
 $saveLabel = 'Save record';
