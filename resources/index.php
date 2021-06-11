@@ -24,7 +24,7 @@ $pdo = openConnection();
 
 if(!empty($_POST['firstname']) && !empty($_POST['lastname'])) {
     //@todo possible bug below?
-    if(empty($_POST['id'])) { //first it's empty
+    if(empty($_POST['id'])) { //first it's empty then, when we update the info the id is already set up 
         $handle = $pdo->prepare('INSERT INTO user (firstname, lastname, year) VALUES (:firstname, :lastname, :year)');
         $message = 'Your record has been added';
     } else {
@@ -62,7 +62,7 @@ if(!empty($_POST['firstname']) && !empty($_POST['lastname'])) {
 }
 elseif(isset($_POST['delete'])) {
     //@todo BUG? Why does always delete all my users?
-    $handle = $pdo->prepare('DELETE FROM user WHERE id=:id'); //adding the where condition id is the binding id
+    $handle = $pdo->prepare('DELETE FROM user WHERE id=:id'); //adding the condition where  id is the binding id so we can know which user to delete (one specific instead of all)
     //The line below just gave me an error, probably not important. Annoying line.
     $handle->bindValue(':id', $_POST['id']);
     $handle->execute();
@@ -71,7 +71,7 @@ elseif(isset($_POST['delete'])) {
 }
 
 //@todo Invalid query?  - added DB name and changed the position of the separator in concat_ws, specified which id from which table to select
-$handle = $pdo->prepare('SELECT user.id, concat_ws(" ", firstname, lastname) AS name, sport FROM sportusers.user LEFT JOIN sport ON user.id = sport.user_id where year = :year order by sport');
+$handle = $pdo->prepare('SELECT user.id, concat_ws(" ", firstname, lastname) AS name, sport FROM user LEFT JOIN sport ON user.id = sport.user_id where year = :year order by sport');
 $handle->bindValue(':year', date('Y'));
 $handle->execute();
 
@@ -81,7 +81,7 @@ $saveLabel = 'Save record';
 if(!empty($_GET['id'])) {
     $saveLabel = 'Update record';
 
-    $handle = $pdo->prepare('SELECT id, firstname, lastname FROM user where id = :id');
+    $handle = $pdo->prepare('SELECT id, firstname, lastname FROM user where id=:id');
     $handle->bindValue(':id', $_GET['id']);
     $handle->execute();
     $selectedUser = $handle->fetch();
