@@ -24,7 +24,7 @@ $pdo = openConnection();
 
 if(!empty($_POST['firstname']) && !empty($_POST['lastname'])) {
     //@todo possible bug below?
-    if(!empty($_POST['id'])) {
+    if(empty($_POST['id'])) { //first it's empty
         $handle = $pdo->prepare('INSERT INTO user (firstname, lastname, year) VALUES (:firstname, :lastname, :year)');
         $message = 'Your record has been added';
     } else {
@@ -47,13 +47,13 @@ if(!empty($_POST['firstname']) && !empty($_POST['lastname'])) {
         $handle->execute();
         $userId = $_POST['id'];
     } else {
+         $userId = $pdo->lastInsertId();
         //why did I leave this if empty? There must be no important reason for this. Move on.
     }
-
+   
     //@todo Why does this loop not work? If only I could see the bigger picture.
     foreach($_POST['sports'] AS $sport) {
-        $userId = $pdo->lastInsertId();
-
+      
         $handle = $pdo->prepare('INSERT INTO sport (user_id, sport) VALUES (:userId, :sport)');
         $handle->bindValue(':userId', $userId);
         $handle->bindValue(':sport', $sport);
@@ -62,9 +62,9 @@ if(!empty($_POST['firstname']) && !empty($_POST['lastname'])) {
 }
 elseif(isset($_POST['delete'])) {
     //@todo BUG? Why does always delete all my users?
-    $handle = $pdo->prepare('DELETE FROM user');
+    $handle = $pdo->prepare('DELETE FROM user WHERE id=:id'); //adding the where condition id is the binding id
     //The line below just gave me an error, probably not important. Annoying line.
-    //$handle->bindValue(':id', $_POST['id']);
+    $handle->bindValue(':id', $_POST['id']);
     $handle->execute();
 
     $message = 'Your record has been deleted';
